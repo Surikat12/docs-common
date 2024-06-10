@@ -16,6 +16,25 @@ public abstract class AbstractApiController {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
+    @ExceptionHandler(MicroserviceMethodErrorException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ResponseEntity<ApiError> handleMicroserviceMethodErrorException(MicroserviceMethodErrorException e) {
+        LOGGER.error("MicroserviceMethodErrorException", e);
+        try {
+            if (e.getCause() instanceof RestClientResponseException) {
+                RestClientResponseException exResp = (RestClientResponseException) e.getCause();
+                ApiError apiError = new ObjectMapper().readValue(exResp.getResponseBodyAsString(), ApiError.class);
+                String pref = e.getServiceName() != null ? e.getServiceName() + ": " : "";
+                ApiError apiErrorResponse = new ApiError(e.getErrorCode(), pref + apiError.getDescription());
+                return ResponseEntity.status(exResp.getRawStatusCode()).body(apiErrorResponse);
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Error on handleMicroserviceMethodErrorException", ex);
+        }
+        return ResponseEntity.status(e.getHttpStatus()).body(new ApiError(e.getErrorCode(), e.getMessage()));
+    }
+
     @ExceptionHandler(DocsServiceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
