@@ -1,16 +1,14 @@
 package com.surikat.docs.common.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.surikat.docs.common.exception.BadArgumentException;
-import com.surikat.docs.common.exception.DocsServiceException;
-import com.surikat.docs.common.exception.DocsServiceRuntimeException;
-import com.surikat.docs.common.exception.MicroserviceMethodErrorException;
+import com.surikat.docs.common.exception.*;
 import com.surikat.docs.common.model.rest.ApiError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +46,31 @@ public abstract class AbstractApiController {
         }
         String message = sb.length() == 0 ? tmp.getDescription() : sb.toString();
         return new ApiError(tmp.getErrorCode(), message);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ApiError handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        LOGGER.error("handleHttpMessageNotReadableException", e);
+        HttpMessageParsingException tmp = new HttpMessageParsingException(e.getMessage(), e);
+        return new ApiError(tmp.getErrorCode(), tmp.getDescription());
+    }
+
+    @ExceptionHandler(DocsService400Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ApiError handleDocsService400Exception(DocsService400Exception e) {
+        LOGGER.error("handleDocsService400Exception", e);
+        return new ApiError(e.getErrorCode(), e.getDescription());
+    }
+
+    @ExceptionHandler(DocsService500Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ApiError handleDocsService500Exception(DocsService500Exception e) {
+        LOGGER.error("handleDocsService500Exception", e);
+        return new ApiError(e.getErrorCode(), e.getDescription());
     }
 
     @ExceptionHandler(MicroserviceMethodErrorException.class)
