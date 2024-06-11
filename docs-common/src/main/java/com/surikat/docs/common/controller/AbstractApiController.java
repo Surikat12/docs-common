@@ -57,6 +57,14 @@ public abstract class AbstractApiController {
         return new ApiError(tmp.getErrorCode(), tmp.getDescription());
     }
 
+    @ExceptionHandler(DataBaseException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public ApiError handleDataBaseException(DataBaseException e) {
+        LOGGER.error("handleDataBaseException", e);
+        return new ApiError(e.getErrorCode(), e.getDescription());
+    }
+
     @ExceptionHandler(DocsService400Exception.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
