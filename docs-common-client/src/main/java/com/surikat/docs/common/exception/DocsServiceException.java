@@ -55,7 +55,10 @@ public class DocsServiceException extends Exception {
     public enum ErrorCode implements Code {
         SERVER_ERROR(1, "На сервере произошла ошибка"),
         BAD_REQUEST(2, "Неверные параметры запроса (%s)"),
-        MICROSERVICE_METHOD_ERROR(50, "Микросервис %s вернул ошибку");
+
+        MICROSERVICE_METHOD_ERROR(50, "Микросервис %s вернул ошибку"),
+
+        DATA_BASE_ERROR(70, "Ошибка в работе базы данных");
 
         private final int value;
         private final String description;
